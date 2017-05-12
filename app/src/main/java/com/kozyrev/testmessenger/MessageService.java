@@ -56,14 +56,11 @@ public class MessageService extends IntentService {
     } catch (JSONException e) {
       Log.e(TAG, "incorrect json", e);
     }
-
     Intent localIntent =
         new Intent(MainActivity.UI_MESSAGE_ACTION)
-            // Puts the data into the Intent
             .putExtra(MainActivity.UI_MESSAGE_TYPE, MainActivity.UI_OBJECT)
             .putExtra(MainActivity.UI_MESSAGE_JSON,
                 (jsonObject != null) ? jsonObject.toString().replaceAll("\\\\/", "/") : null);
-    // Broadcasts the Intent to receivers in this app.
     LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     sendUserIsOfflineIfNeeded();
   }
@@ -71,17 +68,13 @@ public class MessageService extends IntentService {
   private void sendUserIsOfflineIfNeeded() {
     if (!isNetworkConnected()) {
       Intent localIntent =
-          new Intent(MainActivity.UI_MESSAGE_ACTION)
-              // Puts the status into the Intent
-              .putExtra(MainActivity.UI_MESSAGE_TYPE, MainActivity.UI_OFFLINE);
-      // Broadcasts the Intent to receivers in this app.
+          new Intent(MainActivity.UI_MESSAGE_ACTION).putExtra(MainActivity.UI_MESSAGE_TYPE, MainActivity.UI_OFFLINE);
       LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
   }
 
   private boolean isNetworkConnected() {
     ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
     return cm.getActiveNetworkInfo() != null;
   }
 }

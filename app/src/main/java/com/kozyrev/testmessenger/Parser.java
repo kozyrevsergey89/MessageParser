@@ -78,12 +78,13 @@ class Parser {
   }
 
   private String extractTitleFromUrl(String url) {
-      String content = DownloadUtils.downloadGivenUrl(url);
+    String content = DownloadUtils.downloadGivenUrl(url);
+    if (content != null) {
       Matcher matcher = titlePattern.matcher(content);
       if (matcher.find()) {
         return matcher.group(1);
       }
-
+    }
     return null;
   }
 }

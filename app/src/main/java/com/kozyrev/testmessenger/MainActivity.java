@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.HandlerThread;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,7 +17,6 @@ import android.widget.ProgressBar;
 public class MainActivity extends AppCompatActivity {
 
   public static final String UI_MESSAGE_ACTION = "UI_MESSAGE_ACTION";
-  //private static final String TAG = MainActivity.class.getSimpleName();
   public static final String UI_MESSAGE_TYPE = "UI_MESSAGE_TYPE";
   public static final String UI_OBJECT = "UI_OBJECT";
   public static final String UI_OFFLINE = "UI_OFFLINE";
@@ -32,13 +30,14 @@ public class MainActivity extends AppCompatActivity {
     }
   };
   private UiMessagesBroadcastReceiver uiMessagesBroadcastReceiver;
+  private View.OnClickListener onClickListener;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     sendBtn = findViewById(R.id.chat_send);
     final EditText editText = (EditText) findViewById(R.id.chat_text);
-    sendBtn.setOnClickListener(new View.OnClickListener() {
+    onClickListener = new View.OnClickListener() {
       @Override public void onClick(final View view) {
         if (editText.getText().length() != 0) {
           showProgress(true);
@@ -46,7 +45,8 @@ public class MainActivity extends AppCompatActivity {
           editText.getText().clear();
         }
       }
-    });
+    };
+    sendBtn.setOnClickListener(onClickListener);
     final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.outputs_recycler_view);
     progress = (ProgressBar) findViewById(R.id.circle_progress);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));

@@ -1,6 +1,7 @@
 package com.kozyrev.testmessenger;
 
 class Link {
+
   private String url;
   private String title;
 
