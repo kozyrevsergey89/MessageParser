@@ -1,4 +1,5 @@
 <resources>
   <string name="app_name">TestMessanger</string>
   <string name="enter_message">Enter message</string>
+  <string name="offline_label">You are currently offline...</string>
 </resources>

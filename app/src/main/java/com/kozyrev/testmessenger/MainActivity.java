@@ -1,127 +1,106 @@
 package com.kozyrev.testmessenger;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Message;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.LayoutInflater;
+import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-import java.util.ArrayList;
-import java.util.List;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
-  private static final String TAG = MainActivity.class.getSimpleName();
-  private static Parser parser = new Parser();
-
-  private List<String> terms = new ArrayList<>();
+  public static final String UI_MESSAGE_ACTION = "UI_MESSAGE_ACTION";
+  //private static final String TAG = MainActivity.class.getSimpleName();
+  public static final String UI_MESSAGE_TYPE = "UI_MESSAGE_TYPE";
+  public static final String UI_OBJECT = "UI_OBJECT";
+  public static final String UI_OFFLINE = "UI_OFFLINE";
+  public static final String UI_MESSAGE_JSON = "UI_MESSAGE_JSON";
   private SolutionAdapter solutionAdapter;
-  private RecyclerView recyclerView;
   private ProgressBar progress;
-  private Handler workerHandler;
-  private Handler uiHandler;
+  private View sendBtn;
+  private Runnable stopProgressRunnable = new Runnable() {
+    @Override public void run() {
+      showProgress(false);
+    }
+  };
+  private UiMessagesBroadcastReceiver uiMessagesBroadcastReceiver;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    View sendBtn = findViewById(R.id.chat_send);
+    sendBtn = findViewById(R.id.chat_send);
     final EditText editText = (EditText) findViewById(R.id.chat_text);
     sendBtn.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(final View view) {
         if (editText.getText().length() != 0) {
           showProgress(true);
-          Message message = workerHandler.obtainMessage();
-          message.obj = editText.getText().toString();
-          workerHandler.sendMessage(message);
+          MessageService.startActionFoo(MainActivity.this, editText.getText().toString());
           editText.getText().clear();
         }
       }
     });
-    recyclerView = (RecyclerView) findViewById(R.id.outputs_recycler_view);
+    final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.outputs_recycler_view);
     progress = (ProgressBar) findViewById(R.id.circle_progress);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
-    solutionAdapter = new SolutionAdapter(terms);
+    solutionAdapter = new SolutionAdapter();
     recyclerView.setAdapter(solutionAdapter);
-    recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+    recyclerView.addItemDecoration(new VerticalSpaceItemDecoration(getResources().getDimensionPixelSize(R.dimen
+        .space_decoration)));
+  }
 
-    HandlerThread workerThread = new HandlerThread("WorkerThread");
-    workerThread.start();
-    uiHandler = new Handler(new Handler.Callback() {
-      @Override public boolean handleMessage(Message msg) {
-        showProgress(false);
-        String objectOfInterest = (String) msg.obj;
-        if (objectOfInterest != null) {
-          terms.add(0, objectOfInterest);
-          solutionAdapter.notifyItemInserted(0);
-        }
-        return true;
-      }
-    });
-    workerHandler = new Handler(workerThread.getLooper(), new Handler.Callback() {
-      @Override public boolean handleMessage(Message msg) {
-        JSONObject jsonObject = null;
-        try {
-          jsonObject = parser.parseJsonMessage((String) msg.obj);
-        } catch (JSONException e) {
-          Log.e(TAG, "incorrect json", e);
-        }
-        Message uiMessage = uiHandler.obtainMessage();
-        uiMessage.obj = (jsonObject != null) ? jsonObject.toString().replaceAll("\\\\/", "/") : null;
-        uiHandler.sendMessage(uiMessage);
-        return true;
-      }
-    });
+  @Override protected void onStart() {
+    super.onStart();
+    IntentFilter uiMessageIntentFilter = new IntentFilter(
+        MainActivity.UI_MESSAGE_ACTION);
+    uiMessagesBroadcastReceiver = new UiMessagesBroadcastReceiver(solutionAdapter, sendBtn, stopProgressRunnable);
+    LocalBroadcastManager.getInstance(this).registerReceiver(
+        uiMessagesBroadcastReceiver, uiMessageIntentFilter);
+  }
+
+  @Override protected void onStop() {
+    super.onStop();
+    LocalBroadcastManager.getInstance(this).unregisterReceiver(uiMessagesBroadcastReceiver);
   }
 
   private void showProgress(boolean showProgress) {
     if (showProgress) {
-      progress.setVisibility(View.VISIBLE);
-      recyclerView.setVisibility(View.GONE);
+      UiUtils.showProgress(progress, sendBtn);
     } else {
-      progress.setVisibility(View.GONE);
-      recyclerView.setVisibility(View.VISIBLE);
+      UiUtils.hideProgress(progress, sendBtn);
     }
   }
 
-  private static class SolutionAdapter extends RecyclerView.Adapter<SolutionAdapter.SolutionViewHolder> {
+  private static class UiMessagesBroadcastReceiver extends BroadcastReceiver {
 
-    private List<String> data;
+    private final SolutionAdapter solutionAdapter;
+    private final View sendView;
+    private final Runnable stopProgressRunnable;
 
-    private SolutionAdapter(final List<String> data) {
-      this.data = data;
+    public UiMessagesBroadcastReceiver(SolutionAdapter solutionAdapter, View sendView, Runnable stopProgressRunnable) {
+      super();
+      this.solutionAdapter = solutionAdapter;
+      this.sendView = sendView;
+      this.stopProgressRunnable = stopProgressRunnable;
     }
 
-    @Override public SolutionViewHolder onCreateViewHolder(final ViewGroup parent, final int viewType) {
-      TextView v = (TextView) LayoutInflater.from(parent.getContext())
-        .inflate(R.layout.text_view_item, parent, false);
-      return new SolutionViewHolder(v);
-    }
-
-    @Override public void onBindViewHolder(final SolutionViewHolder holder, final int position) {
-      holder.mTextView.setText(data.get(position));
-    }
-
-    @Override public int getItemCount() {
-      return (data != null) ? data.size() : 0;
-    }
-
-    static class SolutionViewHolder extends RecyclerView.ViewHolder {
-      TextView mTextView;
-
-      SolutionViewHolder(TextView v) {
-        super(v);
-        mTextView = v;
+    @Override public void onReceive(Context context, Intent intent) {
+      String type = intent.getStringExtra(UI_MESSAGE_TYPE);
+      if (UI_OFFLINE.equals(type)) {
+        UiUtils.showWhiteSnackbar(sendView, context.getString(R.string.offline_label));
+      } else if (UI_OBJECT.equals(type)) {
+        sendView.postDelayed(stopProgressRunnable, context.getResources().getInteger(android.R.integer
+            .config_shortAnimTime));
+        if (!TextUtils.isEmpty(intent.getStringExtra(UI_MESSAGE_JSON))) {
+          solutionAdapter.insertElement(intent.getStringExtra(UI_MESSAGE_JSON));
+        }
       }
     }
   }

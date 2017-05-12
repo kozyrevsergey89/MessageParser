@@ -1,6 +1,5 @@
 package com.kozyrev.testmessenger;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -10,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 class Parser {
+
   private Pattern mentionsPattern = Pattern.compile("\\B@([a-z0-9_-]+)", Pattern.CASE_INSENSITIVE);
   private Pattern emoticonsPattern = Pattern.compile("\\(([\\w]{1,15})\\)", Pattern.CASE_INSENSITIVE);
   private Pattern titlePattern = Pattern.compile("<title>(.*?)</title>", Pattern.CASE_INSENSITIVE);
@@ -78,15 +78,12 @@ class Parser {
   }
 
   private String extractTitleFromUrl(String url) {
-    try {
-      String content = DownloadUtils.downloadUrl(url);
+      String content = DownloadUtils.downloadGivenUrl(url);
       Matcher matcher = titlePattern.matcher(content);
       if (matcher.find()) {
         return matcher.group(1);
       }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+
     return null;
   }
 }

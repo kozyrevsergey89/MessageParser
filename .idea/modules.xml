@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/MessageParser.iml" filepath="$PROJECT_DIR$/MessageParser.iml" />
       <module fileurl="file://$PROJECT_DIR$/TestMessanger.iml" filepath="$PROJECT_DIR$/TestMessanger.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

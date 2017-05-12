@@ -1,57 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:id="@+id/activity_main"
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:paddingBottom="@dimen/activity_vertical_margin"
-  android:paddingLeft="@dimen/activity_horizontal_margin"
-  android:paddingRight="@dimen/activity_horizontal_margin"
-  android:paddingTop="@dimen/activity_vertical_margin"
-  tools:context="com.kozyrev.testmessenger.MainActivity">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.kozyrev.testmessenger.MainActivity"
+    >
 
   <LinearLayout
-    android:id="@+id/chat_container"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_alignParentBottom="true"
-    android:orientation="horizontal">
+      android:id="@+id/chat_container"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_alignParentBottom="true"
+      android:orientation="horizontal"
+      >
 
     <EditText
-      android:id="@+id/chat_text"
-      android:layout_width="0dp"
-      android:layout_height="50dp"
-      android:layout_weight="1"
-      android:hint="@string/enter_message" />
+        android:id="@+id/chat_text"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:hint="@string/enter_message"
+        />
 
-    <ImageButton
-      android:id="@+id/chat_send"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:src="@android:drawable/ic_menu_send" />
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        >
+      <ImageButton
+          android:id="@+id/chat_send"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:src="@android:drawable/ic_menu_send"
+          />
+
+      <ProgressBar
+          android:id="@+id/circle_progress"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:indeterminate="true"
+          android:visibility="gone"
+          />
+    </FrameLayout>
+
   </LinearLayout>
 
   <View
-    android:id="@+id/chat_separator"
-    android:layout_width="match_parent"
-    android:layout_height="1dp"
-    android:layout_above="@id/chat_container"
-    android:background="@android:color/darker_gray" />
-
-  <ProgressBar
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_centerInParent="true"
-      android:indeterminate="true"
-      android:id="@+id/circle_progress"
-      android:visibility="gone"
+      android:id="@+id/chat_separator"
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:layout_above="@id/chat_container"
+      android:background="@android:color/darker_gray"
       />
 
+
   <android.support.v7.widget.RecyclerView
-    android:id="@+id/outputs_recycler_view"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_above="@id/chat_separator"
-    android:layout_alignParentTop="true"
-    android:scrollbars="vertical" />
+      android:id="@+id/outputs_recycler_view"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_above="@id/chat_separator"
+      android:layout_alignParentTop="true"
+      android:scrollbars="vertical"
+      />
 </RelativeLayout>
