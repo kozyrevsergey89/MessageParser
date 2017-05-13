@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
   };
   private UiMessagesBroadcastReceiver uiMessagesBroadcastReceiver;
   private View.OnClickListener onClickListener;
+  private RecyclerView recyclerView;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
       }
     };
     sendBtn.setOnClickListener(onClickListener);
-    final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.outputs_recycler_view);
+    recyclerView = (RecyclerView) findViewById(R.id.outputs_recycler_view);
     progress = (ProgressBar) findViewById(R.id.circle_progress);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
     solutionAdapter = new SolutionAdapter();
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     super.onStart();
     IntentFilter uiMessageIntentFilter = new IntentFilter(
         MainActivity.UI_MESSAGE_ACTION);
-    uiMessagesBroadcastReceiver = new UiMessagesBroadcastReceiver(solutionAdapter, sendBtn, stopProgressRunnable);
+    uiMessagesBroadcastReceiver = new UiMessagesBroadcastReceiver(solutionAdapter, sendBtn, stopProgressRunnable, recyclerView);
     LocalBroadcastManager.getInstance(this).registerReceiver(
         uiMessagesBroadcastReceiver, uiMessageIntentFilter);
   }
@@ -83,12 +84,15 @@ public class MainActivity extends AppCompatActivity {
     private final SolutionAdapter solutionAdapter;
     private final View sendView;
     private final Runnable stopProgressRunnable;
+    private final RecyclerView recyclerView;
 
-    public UiMessagesBroadcastReceiver(SolutionAdapter solutionAdapter, View sendView, Runnable stopProgressRunnable) {
+    public UiMessagesBroadcastReceiver(SolutionAdapter solutionAdapter, View sendView, Runnable stopProgressRunnable,
+        RecyclerView recyclerView) {
       super();
       this.solutionAdapter = solutionAdapter;
       this.sendView = sendView;
       this.stopProgressRunnable = stopProgressRunnable;
+      this.recyclerView = recyclerView;
     }
 
     @Override public void onReceive(Context context, Intent intent) {
@@ -100,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
             .config_shortAnimTime));
         if (!TextUtils.isEmpty(intent.getStringExtra(UI_MESSAGE_JSON))) {
           solutionAdapter.insertElement(intent.getStringExtra(UI_MESSAGE_JSON));
+          recyclerView.smoothScrollToPosition(solutionAdapter.getItemCount()-1);
         }
       }
     }
