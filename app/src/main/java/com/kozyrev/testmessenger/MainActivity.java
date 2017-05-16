@@ -64,14 +64,11 @@ public class MainActivity extends AppCompatActivity {
 
   @Override protected void onStart() {
     super.onStart();
-    if (registerReceiver(null, new IntentFilter(MessageService.MESSAGE_SERVICE_PROGRESS)) != null){
-      showProgress(true);
-    } else {
-      showProgress(false);
-    }
+    showProgress(registerReceiver(null, new IntentFilter(MessageService.MESSAGE_SERVICE_PROGRESS)) != null);
     IntentFilter uiMessageIntentFilter = new IntentFilter(
         MainActivity.UI_MESSAGE_ACTION);
-    uiMessagesBroadcastReceiver = new UiMessagesBroadcastReceiver(solutionAdapter, sendBtn, stopProgressRunnable, recyclerView);
+    uiMessagesBroadcastReceiver =
+        new UiMessagesBroadcastReceiver(solutionAdapter, sendBtn, stopProgressRunnable, recyclerView);
     LocalBroadcastManager.getInstance(this).registerReceiver(
         uiMessagesBroadcastReceiver, uiMessageIntentFilter);
   }
@@ -114,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
             .config_shortAnimTime));
         if (!TextUtils.isEmpty(intent.getStringExtra(UI_MESSAGE_JSON))) {
           solutionAdapter.insertElement(intent.getStringExtra(UI_MESSAGE_JSON));
-          recyclerView.smoothScrollToPosition(solutionAdapter.getItemCount()-1);
+          recyclerView.smoothScrollToPosition(solutionAdapter.getItemCount() - 1);
         }
       }
     }
