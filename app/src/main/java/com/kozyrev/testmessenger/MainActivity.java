@@ -16,11 +16,15 @@ import android.widget.ProgressBar;
 
 public class MainActivity extends AppCompatActivity {
 
+  /**
+   * Constants for intents communication
+   */
   public static final String UI_MESSAGE_ACTION = "UI_MESSAGE_ACTION";
   public static final String UI_MESSAGE_TYPE = "UI_MESSAGE_TYPE";
   public static final String UI_OBJECT = "UI_OBJECT";
   public static final String UI_OFFLINE = "UI_OFFLINE";
   public static final String UI_MESSAGE_JSON = "UI_MESSAGE_JSON";
+
   private SolutionAdapter solutionAdapter;
   private ProgressBar progress;
   private View sendBtn;
@@ -38,11 +42,12 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
     sendBtn = findViewById(R.id.chat_send);
     final EditText editText = (EditText) findViewById(R.id.chat_text);
+    // for every non empty input we try to process it by sending in intent to MessageService
     onClickListener = new View.OnClickListener() {
       @Override public void onClick(final View view) {
         if (editText.getText().length() != 0) {
           showProgress(true);
-          MessageService.startActionFoo(MainActivity.this, editText.getText().toString());
+          MessageService.startActionParseMessage(MainActivity.this, editText.getText().toString());
           editText.getText().clear();
         }
       }
@@ -59,6 +64,11 @@ public class MainActivity extends AppCompatActivity {
 
   @Override protected void onStart() {
     super.onStart();
+    if (registerReceiver(null, new IntentFilter(MessageService.MESSAGE_SERVICE_PROGRESS)) != null){
+      showProgress(true);
+    } else {
+      showProgress(false);
+    }
     IntentFilter uiMessageIntentFilter = new IntentFilter(
         MainActivity.UI_MESSAGE_ACTION);
     uiMessagesBroadcastReceiver = new UiMessagesBroadcastReceiver(solutionAdapter, sendBtn, stopProgressRunnable, recyclerView);

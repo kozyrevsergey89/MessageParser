@@ -11,11 +11,13 @@ import org.json.JSONObject;
 
 public class MessageService extends IntentService {
 
+  public static final String MESSAGE_SERVICE_PROGRESS = "MessageServiceProgress";
   private static final String ACTION_PARSE_MESSAGE = "com.kozyrev.testmessenger.action.PARSE_MESSAGE";
   private static final String EXTRA_TEXT_MESSAGE = "com.kozyrev.testmessenger.extra.TEXT_MESSAGE";
   private static final String TAG = MessageService.class.getSimpleName();
 
   private static Parser parser = new Parser();
+  private Intent progressStickyIntent;
 
   public MessageService() {
     super("MessageService");
@@ -27,11 +29,16 @@ public class MessageService extends IntentService {
    *
    * @see IntentService
    */
-  public static void startActionFoo(Context context, String textMessage) {
+  public static void startActionParseMessage(Context context, String textMessage) {
     Intent intent = new Intent(context, MessageService.class);
     intent.setAction(ACTION_PARSE_MESSAGE);
     intent.putExtra(EXTRA_TEXT_MESSAGE, textMessage);
     context.startService(intent);
+  }
+
+  @Override public void onCreate() {
+    super.onCreate();
+    progressStickyIntent = new Intent(MESSAGE_SERVICE_PROGRESS);
   }
 
   @Override
@@ -39,8 +46,10 @@ public class MessageService extends IntentService {
     if (intent != null) {
       final String action = intent.getAction();
       if (ACTION_PARSE_MESSAGE.equals(action)) {
+        sendStickyBroadcast(progressStickyIntent);
         final String textMessage = intent.getStringExtra(EXTRA_TEXT_MESSAGE);
         handleTextMessage(textMessage);
+        removeStickyBroadcast(progressStickyIntent);
       }
     }
   }
