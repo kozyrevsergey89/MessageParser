@@ -8,6 +8,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Handles message parsing and loading titles for found links
+ */
 class Parser {
 
   private Pattern mentionsPattern = Pattern.compile("\\B@([a-z0-9_-]+)", Pattern.CASE_INSENSITIVE);

@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
     sendBtn = findViewById(R.id.chat_send);
     final EditText editText = (EditText) findViewById(R.id.chat_text);
-    // for every non empty input we try to process it by sending in intent to MessageService
+    // for every non empty input try to process it by sending intent with extras to MessageService
     onClickListener = new View.OnClickListener() {
       @Override public void onClick(final View view) {
         if (editText.getText().length() != 0) {
@@ -64,13 +64,14 @@ public class MainActivity extends AppCompatActivity {
 
   @Override protected void onStart() {
     super.onStart();
+    // check if service is currently processing message request and show appropriate progress state on start
     showProgress(registerReceiver(null, new IntentFilter(MessageService.MESSAGE_SERVICE_PROGRESS)) != null);
     IntentFilter uiMessageIntentFilter = new IntentFilter(
         MainActivity.UI_MESSAGE_ACTION);
     uiMessagesBroadcastReceiver =
         new UiMessagesBroadcastReceiver(solutionAdapter, sendBtn, stopProgressRunnable, recyclerView);
-    LocalBroadcastManager.getInstance(this).registerReceiver(
-        uiMessagesBroadcastReceiver, uiMessageIntentFilter);
+    // register receiver for obtaining message request processing results from service
+    LocalBroadcastManager.getInstance(this).registerReceiver(uiMessagesBroadcastReceiver, uiMessageIntentFilter);
   }
 
   @Override protected void onStop() {
@@ -78,6 +79,10 @@ public class MainActivity extends AppCompatActivity {
     LocalBroadcastManager.getInstance(this).unregisterReceiver(uiMessagesBroadcastReceiver);
   }
 
+  /**
+   * Shows progress with fadeIn/fadeOut animations
+   * @param showProgress
+   */
   private void showProgress(boolean showProgress) {
     if (showProgress) {
       UiUtils.showProgress(progress, sendBtn);
@@ -107,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
       if (UI_OFFLINE.equals(type)) {
         UiUtils.showWhiteSnackbar(sendView, context.getString(R.string.offline_label));
       } else if (UI_OBJECT.equals(type)) {
+        // use postDelayed here to wait until progress/button animation finishes - use same delay as animation length
         sendView.postDelayed(stopProgressRunnable, context.getResources().getInteger(android.R.integer
             .config_shortAnimTime));
         if (!TextUtils.isEmpty(intent.getStringExtra(UI_MESSAGE_JSON))) {

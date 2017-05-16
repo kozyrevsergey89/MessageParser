@@ -10,6 +10,9 @@ import android.view.View;
 import android.widget.TextView;
 import java.lang.ref.WeakReference;
 
+/**
+ * Utils class to handle some UI effects (animations, snackbar etc.)
+ */
 @SuppressWarnings({ "UtilityClass", "WeakerAccess" }) public final class UiUtils {
 
   private UiUtils() {

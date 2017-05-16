@@ -9,51 +9,48 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-class DownloadUtils {
+/**
+ * Utils for network related operations
+ */
+@SuppressWarnings({ "UtilityClass" }) final class DownloadUtils {
 
   private static final String TAG = DownloadUtils.class.getSimpleName();
-
-  private static final String HTTPS = "https";
   private static final String HTTP = "http";
   private static final String HTTP_PREFIX = "http://";
   private static final String HTTPS_PREFIX = "https://";
+  private static final int LENGTH_TO_LOAD = 5000;
 
-  static String downloadGivenUrl(String mentionedUrl) {
+  /**
+   * Download web page content by given url.
+   * If the url does not contain http/https prefixes - try to load using https then http
+   *
+   * @param url Parsed url from text message
+   * @return Text representation of web page by given url
+   */
+  static String downloadGivenUrl(String url) {
     // if given url starts with 'http' prefix - try to load straight
-    if (mentionedUrl.startsWith(HTTP)) {
-      try {
-        return downloadUrl(mentionedUrl);
-      } catch (IOException e) {
-        Log.e(TAG, "network error", e);
-      }
+    if (url.startsWith(HTTP)) {
+      return downloadUrl(url);
     } else {
-      // if given url doesn't start with 'http' prefix - try to load https, if not available then http
+      // if given url does not start with 'http' prefix - try to load https, if not available then http
       String httpsRes = null;
-      try {
-        httpsRes = downloadUrl(HTTPS_PREFIX + mentionedUrl);
-      } catch (IOException e) {
-        Log.e(TAG, "network error", e);
-      }
+      httpsRes = downloadUrl(HTTPS_PREFIX + url);
       if (!TextUtils.isEmpty(httpsRes)) {
         return httpsRes;
       } else {
-        try {
-          return downloadUrl(HTTP_PREFIX + mentionedUrl);
-        } catch (IOException e) {
-          Log.e(TAG, "network error", e);
-        }
+        return downloadUrl(HTTP_PREFIX + url);
       }
     }
-    // if some IOException happened and no result at the moment
-    return null;
   }
 
-  private static String downloadUrl(String mentionedUrl) throws IOException {
+  /**
+   * Download only take the first {@link #LENGTH_TO_LOAD} characters of the web page by given url
+   *
+   * @param mentionedUrl Url to load
+   * @return String representation of first {@link #LENGTH_TO_LOAD} characters of the web page
+   */
+  private static String downloadUrl(String mentionedUrl) {
     InputStream is = null;
-    // Only take the first 5000 characters of the retrieved
-    // web page content to find <title>
-    int len = 5000;
-
     try {
       URL url = new URL(mentionedUrl);
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -65,8 +62,9 @@ class DownloadUtils {
       int response = conn.getResponseCode();
       Log.d(Parser.class.getSimpleName(), "The response is: " + response);
       is = conn.getInputStream();
-
-      return readIt(is, len);
+      return readIt(is, LENGTH_TO_LOAD);
+    } catch (IOException e) {
+      Log.e(TAG, "error while loading page", e);
     } finally {
       try {
         if (is != null) {
@@ -76,6 +74,8 @@ class DownloadUtils {
         Log.e(TAG, "error during closing input stream: ", e);
       }
     }
+    // if some IOException happened just return null
+    return null;
   }
 
   private static String readIt(InputStream stream, int len) throws IOException {
@@ -83,5 +83,8 @@ class DownloadUtils {
     char[] buffer = new char[len];
     reader.read(buffer);
     return new String(buffer);
+  }
+
+  private DownloadUtils() {
   }
 }

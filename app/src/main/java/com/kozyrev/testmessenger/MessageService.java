@@ -1,23 +1,27 @@
 package com.kozyrev.testmessenger;
 
 import android.app.IntentService;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Service that handles message requests processing
+ */
 public class MessageService extends IntentService {
 
   public static final String MESSAGE_SERVICE_PROGRESS = "MessageServiceProgress";
+
   private static final String ACTION_PARSE_MESSAGE = "com.kozyrev.testmessenger.action.PARSE_MESSAGE";
   private static final String EXTRA_TEXT_MESSAGE = "com.kozyrev.testmessenger.extra.TEXT_MESSAGE";
   private static final String TAG = MessageService.class.getSimpleName();
 
   private static Parser parser = new Parser();
-  private Intent progressStickyIntent;
+  private final Intent progressStickyIntent = new Intent(MESSAGE_SERVICE_PROGRESS);
 
   public MessageService() {
     super("MessageService");
@@ -34,11 +38,6 @@ public class MessageService extends IntentService {
     intent.setAction(ACTION_PARSE_MESSAGE);
     intent.putExtra(EXTRA_TEXT_MESSAGE, textMessage);
     context.startService(intent);
-  }
-
-  @Override public void onCreate() {
-    super.onCreate();
-    progressStickyIntent = new Intent(MESSAGE_SERVICE_PROGRESS);
   }
 
   @Override
@@ -65,11 +64,13 @@ public class MessageService extends IntentService {
     } catch (JSONException e) {
       Log.e(TAG, "incorrect json", e);
     }
+    // send parsed message and eliminate "\/" json escaping
     Intent localIntent =
         new Intent(MainActivity.UI_MESSAGE_ACTION)
             .putExtra(MainActivity.UI_MESSAGE_TYPE, MainActivity.UI_OBJECT)
             .putExtra(MainActivity.UI_MESSAGE_JSON,
                 (jsonObject != null) ? jsonObject.toString().replaceAll("\\\\/", "/") : null);
+
     LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     sendUserIsOfflineIfNeeded();
   }

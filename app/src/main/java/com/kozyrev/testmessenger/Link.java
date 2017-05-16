@@ -1,8 +1,12 @@
 package com.kozyrev.testmessenger;
 
+/**
+ * Model class to represent a link
+ */
 class Link {
 
   private String url;
+
   private String title;
 
   String getTitle() {
